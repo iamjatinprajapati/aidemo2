@@ -1,5 +1,9 @@
 import { analyticsPlugin } from "@sitecore-content-sdk/analytics-core";
-import { event, eventsPlugin } from "@sitecore-content-sdk/events";
+import {
+  event,
+  EventsPlugin,
+  eventsPlugin,
+} from "@sitecore-content-sdk/events";
 import {
   analyticsProxyAdapter,
   initContentSdk,
@@ -7,7 +11,7 @@ import {
 import { SitecoreConfig } from "@sitecore-content-sdk/nextjs/config";
 import { ProxyBase, ProxyBaseConfig } from "@sitecore-content-sdk/nextjs/proxy";
 import { NextFetchEvent, NextRequest, NextResponse } from "next/server";
-import { getEventsPlugin } from "node_modules/@sitecore-content-sdk/events/types/src/initialization/plugin";
+import { getCoreContext } from "@sitecore-content-sdk/core";
 
 export type DemandbaseTrackingProxyConfig = SitecoreConfig["api"]["edge"] &
   Omit<ProxyBaseConfig, "defaultLanguage"> & {
@@ -77,10 +81,12 @@ export class DemandbaseTrackingProxy extends ProxyBase {
         };
         // console.log("Sending demandbase data to event system:", eventData);
         try {
-          const eventsPlugin = getEventsPlugin();
-          if (!eventsPlugin) {
-            console.error("Events plugin not found in DemandbaseTrackingProxy");
-            return;
+          const plugin = getCoreContext().plugins.get("EventsPlugin") as
+            | EventsPlugin
+            | undefined;
+          if (!plugin) {
+            console.error("EventsPlugin not found in core context");
+            return res;
           }
           await event(eventData);
         } catch (err) {
