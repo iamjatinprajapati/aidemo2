@@ -7,6 +7,7 @@ import {
 import { SitecoreConfig } from "@sitecore-content-sdk/nextjs/config";
 import { ProxyBase, ProxyBaseConfig } from "@sitecore-content-sdk/nextjs/proxy";
 import { NextFetchEvent, NextRequest, NextResponse } from "next/server";
+import { getEventsPlugin } from "node_modules/@sitecore-content-sdk/events/types/src/initialization/plugin";
 
 export type DemandbaseTrackingProxyConfig = SitecoreConfig["api"]["edge"] &
   Omit<ProxyBaseConfig, "defaultLanguage"> & {
@@ -34,7 +35,7 @@ export class DemandbaseTrackingProxy extends ProxyBase {
       }
 
       const demandbaseTracking = async () => {
-        await initContentSdk({
+        const sdk = await initContentSdk({
           config: {
             contextId: this.config.contextId,
             edgeUrl: this.config.edgeUrl,
@@ -76,6 +77,11 @@ export class DemandbaseTrackingProxy extends ProxyBase {
         };
         // console.log("Sending demandbase data to event system:", eventData);
         try {
+          const eventsPlugin = getEventsPlugin();
+          if (!eventsPlugin) {
+            console.error("Events plugin not found in DemandbaseTrackingProxy");
+            return;
+          }
           await event(eventData);
         } catch (err) {
           console.error("Failed to send demandbase event:", err);
