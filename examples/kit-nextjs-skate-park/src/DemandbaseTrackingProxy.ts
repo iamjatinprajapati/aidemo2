@@ -74,8 +74,12 @@ export class DemandbaseTrackingProxy extends ProxyBase {
             business_structure: body.business_structure,
           },
         };
-        console.log("Sending demandbase data to event system:", eventData);
-        await event(eventData);
+        // console.log("Sending demandbase data to event system:", eventData);
+        try {
+          await event(eventData);
+        } catch (err) {
+          console.error("Failed to send demandbase event:", err);
+        }
       };
       if (this.config.fetchEvent) {
         this.config.fetchEvent.waitUntil(demandbaseTracking());
