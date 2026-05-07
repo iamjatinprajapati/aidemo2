@@ -37,6 +37,7 @@ export default async function SiteLayout({
     },
   };
 
+  //Added event
   event(eventData);
 
   return (
