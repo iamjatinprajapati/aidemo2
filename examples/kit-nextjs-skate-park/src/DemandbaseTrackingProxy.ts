@@ -23,6 +23,7 @@ export class DemandbaseTrackingProxy extends ProxyBase {
     res: NextResponse,
   ): Promise<NextResponse> => {
     try {
+      console.log("In DemandbaseTrackingProxy");
       const isDisabled =
         (this.config.skip && this.config.skip(req, res)) || false;
       if (isDisabled) {
@@ -73,7 +74,7 @@ export class DemandbaseTrackingProxy extends ProxyBase {
             business_structure: body.business_structure,
           },
         };
-
+        console.log("Sending demandbase data to event system:", eventData);
         event(eventData);
       };
       if (this.config.fetchEvent) {
