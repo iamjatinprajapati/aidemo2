@@ -1,14 +1,16 @@
-import { type NextRequest } from 'next/server';
+import { type NextRequest } from "next/server";
 import {
   defineProxy,
   AppRouterMultisiteProxy,
   PersonalizeProxy,
   RedirectsProxy,
   LocaleProxy,
-} from '@sitecore-content-sdk/nextjs/proxy';
-import sites from '.sitecore/sites.json';
-import scConfig from 'sitecore.config';
-import { routing } from './i18n/routing';
+  BotTrackingProxy,
+} from "@sitecore-content-sdk/nextjs/proxy";
+import sites from ".sitecore/sites.json";
+import scConfig from "sitecore.config";
+import { routing } from "./i18n/routing";
+import { DemandbaseTrackingProxy } from "./DemandbaseTrackingProxy";
 
 const locale = new LocaleProxy({
   /**
@@ -68,8 +70,26 @@ const personalize = new PersonalizeProxy({
   skip: () => false,
 });
 
-export default function proxy(req: NextRequest) {
-  return defineProxy(locale, multisite, redirects, personalize).exec(req);
+export default function proxy(req: NextRequest, event: any) {
+  const botTracking = new BotTrackingProxy({
+    ...scConfig.api.edge,
+    sites,
+    fetchEvent: event,
+  });
+  const demandbaseTracking = new DemandbaseTrackingProxy({
+    ...scConfig.api.edge,
+    sites,
+    fetchEvent: event,
+    skip: () => false,
+  });
+  return defineProxy(
+    botTracking,
+    demandbaseTracking,
+    locale,
+    multisite,
+    redirects,
+    personalize,
+  ).exec(req);
 }
 
 export const config = {
@@ -83,7 +103,7 @@ export const config = {
    * 7. all root files inside /public
    */
   matcher: [
-    '/',
-    '/((?!api/|\\.well-known/|sitemap|robots|llms|_next/|healthz|sitecore/api/|-/|favicon.ico|sc_logo.svg|ai/).*)',
+    "/",
+    "/((?!api/|\\.well-known/|sitemap|robots|llms|_next/|healthz|sitecore/api/|-/|favicon.ico|sc_logo.svg|ai/).*)",
   ],
 };
