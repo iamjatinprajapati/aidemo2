@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, JSX } from "react";
 import { initContentSdk } from "@sitecore-content-sdk/nextjs";
-import { eventsPlugin } from "@sitecore-content-sdk/events";
+import { EventsPlugin, eventsPlugin } from "@sitecore-content-sdk/events";
 import {
   analyticsBrowserAdapter,
   analyticsPlugin,
@@ -11,6 +11,7 @@ import {
   personalizeBrowserAdapter,
   personalizeBrowserPlugin,
 } from "@sitecore-content-sdk/personalize";
+import { getCoreContext } from "@sitecore-content-sdk/core";
 
 const Bootstrap = ({
   siteName,
@@ -58,6 +59,12 @@ const Bootstrap = ({
           }),
         ],
       });
+      const plugin = getCoreContext().plugins.get("EventsPlugin") as
+        | EventsPlugin
+        | undefined;
+      if (plugin) {
+        console.log("events plugin is available in bootstrap");
+      }
     } else {
       console.error("Client Edge API settings missing from configuration");
     }
