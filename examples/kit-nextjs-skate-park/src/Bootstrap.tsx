@@ -36,35 +36,35 @@ const Bootstrap = ({
     }
 
     if (config.api.edge?.clientContextId) {
-      initContentSdk({
-        config: {
-          contextId: config.api.edge.clientContextId,
-          edgeUrl: config.api.edge.edgeUrl,
-          siteName: siteName || config.defaultSite,
-        },
-        plugins: [
-          analyticsPlugin({
-            options: {
-              enableCookie: true,
-              cookieDomain: window.location.hostname.replace(/^www\./, ""),
-            },
-            adapter: analyticsBrowserAdapter(),
-          }),
-          eventsPlugin(),
-          personalizeBrowserPlugin({
-            options: {
-              enablePersonalizeCookie: true,
-            },
-            adapter: personalizeBrowserAdapter(),
-          }),
-        ],
-      });
-      const plugin = getCoreContext().plugins.get("EventsPlugin") as
-        | EventsPlugin
-        | undefined;
-      if (plugin) {
-        console.log("events plugin is available in bootstrap");
-      }
+      // initContentSdk({
+      //   config: {
+      //     contextId: config.api.edge.clientContextId,
+      //     edgeUrl: config.api.edge.edgeUrl,
+      //     siteName: siteName || config.defaultSite,
+      //   },
+      //   plugins: [
+      //     analyticsPlugin({
+      //       options: {
+      //         enableCookie: true,
+      //         cookieDomain: window.location.hostname.replace(/^www\./, ""),
+      //       },
+      //       adapter: analyticsBrowserAdapter(),
+      //     }),
+      //     eventsPlugin(),
+      //     personalizeBrowserPlugin({
+      //       options: {
+      //         enablePersonalizeCookie: true,
+      //       },
+      //       adapter: personalizeBrowserAdapter(),
+      //     }),
+      //   ],
+      // });
+      // const plugin = getCoreContext().plugins.get("EventsPlugin") as
+      //   | EventsPlugin
+      //   | undefined;
+      // if (plugin) {
+      //   console.log("events plugin is available in bootstrap");
+      // }
     } else {
       console.error("Client Edge API settings missing from configuration");
     }
