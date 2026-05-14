@@ -1,7 +1,11 @@
 "use client";
 import { useEffect, useRef, JSX } from "react";
 import { initContentSdk } from "@sitecore-content-sdk/nextjs";
-import { EventsPlugin, eventsPlugin } from "@sitecore-content-sdk/events";
+import {
+  event,
+  EventsPlugin,
+  eventsPlugin,
+} from "@sitecore-content-sdk/events";
 import {
   analyticsBrowserAdapter,
   analyticsPlugin,
@@ -17,6 +21,7 @@ import {
   personalizeBrowserAdapter,
   personalizeBrowserPlugin,
 } from "@sitecore-content-sdk/personalize";
+import { getDemandbaseData } from "./app/actions";
 
 const Bootstrap = ({
   siteName,
@@ -28,7 +33,7 @@ const Bootstrap = ({
   const { preferences } = useCookieConsent();
   const initialized = useRef(false);
 
-  const initSdk = () => {
+  const initSdk = async () => {
     if (initialized.current) return;
     if (process.env.NODE_ENV === "development") {
       console.debug(
@@ -68,10 +73,10 @@ const Bootstrap = ({
         // Personalization requires marketing consent
         ...(marketing
           ? [
-              personalizeBrowserPlugin({
-                options: { enablePersonalizeCookie: true },
-                adapter: personalizeBrowserAdapter(),
-              }),
+              // personalizeBrowserPlugin({
+              //   options: { enablePersonalizeCookie: true },
+              //   adapter: personalizeBrowserAdapter(),
+              // }),
             ]
           : []),
       ],
@@ -82,6 +87,12 @@ const Bootstrap = ({
       | undefined;
     if (plugin) {
       console.log("events plugin is available in bootstrap");
+      const demandBaseData = await getDemandbaseData();
+      event({
+        type: "demandbase_data",
+        channel: "web",
+        extensionData: demandBaseData,
+      });
     }
   };
 
