@@ -3,11 +3,11 @@ import { useEffect, JSX } from 'react';
 import { CdpHelper, useSitecore } from '@sitecore-content-sdk/nextjs';
 import { pageView } from '@sitecore-content-sdk/events';
 import config from 'sitecore.config';
+import { useCookieConsent } from 'context/CookieConsentContext';
 
 /**
- * This is the CDP page view component.
- * It uses the Sitecore Cloud SDK to enable page view events on the client-side.
- * See Sitecore Cloud SDK documentation for details.
+ * CDP page view component — fires page view events respecting cookie consent.
+ * Marketing consent must be granted before events are sent.
  * https://www.npmjs.com/package/@sitecore-cloudsdk/events
  */
 const CdpPageView = (): JSX.Element => {
@@ -15,25 +15,16 @@ const CdpPageView = (): JSX.Element => {
     page: { layout, siteName, mode },
   } = useSitecore();
   const { route, context } = layout.sitecore;
+  const { preferences } = useCookieConsent();
 
-  /**
-   * Determines if the page view events should be turned off.
-   * IMPORTANT: You should implement based on your cookie consent management solution of choice.
-   * By default it is disabled in development mode
-   */
   const disabled = () => {
-    return process.env.NODE_ENV === 'development';
+    if (process.env.NODE_ENV === 'development') return true;
+    return !preferences?.marketing;
   };
 
   useEffect(() => {
-    // Do not create events in editing or preview mode or if missing route data
-    if (!mode.isNormal || !route?.itemId) {
-      return;
-    }
-    // Do not create events if disabled (e.g. we don't have consent)
-    if (disabled()) {
-      return;
-    }
+    if (!mode.isNormal || !route?.itemId) return;
+    if (disabled()) return;
 
     const language = route.itemLanguage || config.defaultLanguage;
     const scope = config.personalize?.scope;
@@ -44,7 +35,6 @@ const CdpPageView = (): JSX.Element => {
       context.variantId as string,
       scope
     );
-    // there can be cases where Events are not initialized which are expected to reject
     pageView({
       channel: 'WEB',
       currency: 'USD',
@@ -52,7 +42,9 @@ const CdpPageView = (): JSX.Element => {
       pageVariantId,
       language,
     }).catch((e) => console.debug(e));
-  }, [mode, route, context.variantId, siteName]);
+  // preferences is intentionally included so page views fire after consent is granted
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, route, context.variantId, siteName, preferences]);
 
   return <></>;
 };
