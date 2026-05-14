@@ -87,11 +87,16 @@ const Bootstrap = ({
       | undefined;
     if (plugin) {
       console.log("events plugin is available in bootstrap");
-      const demandBaseData = await getDemandbaseData();
       event({
         type: "demandbase_data",
         channel: "web",
-        extensionData: demandBaseData,
+        extensionData: {
+          company: "horizontal",
+          industry: "IT",
+          audience: "B2B",
+          audience_segment: "Tech Buyers",
+          annual_sales: "10M-50M",
+        },
       });
     }
   };
