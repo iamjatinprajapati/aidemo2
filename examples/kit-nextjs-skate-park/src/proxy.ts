@@ -11,6 +11,7 @@ import sites from ".sitecore/sites.json";
 import scConfig from "sitecore.config";
 import { routing } from "./i18n/routing";
 import { DemandbaseTrackingProxy } from "./DemandbaseTrackingProxy";
+import ExtendedPersonalizeProxy from "./ExtendedPersonalizeProxy";
 
 const locale = new LocaleProxy({
   /**
@@ -70,6 +71,20 @@ const personalize = new PersonalizeProxy({
   skip: () => false,
 });
 
+const extendedPersonalize = new ExtendedPersonalizeProxy({
+  /**
+   * List of sites for site resolver to work with
+   */
+  sites,
+  ...scConfig.api.edge,
+  ...scConfig.personalize,
+  // This function determines if the middleware should be turned off on per-request basis.
+  // Certain paths are ignored by default (e.g. Next.js API routes), but you may wish to disable more.
+  // By default it is disabled while in development mode.
+  // This is an important performance consideration since Next.js Edge middleware runs on every request.
+  skip: () => false,
+});
+
 export default function proxy(req: NextRequest, event: any) {
   const botTracking = new BotTrackingProxy({
     ...scConfig.api.edge,
@@ -88,7 +103,8 @@ export default function proxy(req: NextRequest, event: any) {
     locale,
     multisite,
     redirects,
-    personalize,
+    // personalize,
+    extendedPersonalize,
   ).exec(req);
 }
 
